@@ -45,6 +45,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.get("/", (req, res, next) => {
+    return res.status(200).send("Hello there!");
+});
+
 app.use("/", router);
 
 app.use((err, req, res, next) => {
@@ -55,6 +59,7 @@ app.use((err, req, res, next) => {
 });
 (async function main() {
     await connectToDb(process.env.MONGO_URL);
-    const PORT = 8080;
-    server.listen(PORT, () => console.log("Server listening at port " + PORT));
+    server.listen(process.env.PORT, () =>
+        console.log("Server listening at port " + process.env.PORT)
+    );
 })();
