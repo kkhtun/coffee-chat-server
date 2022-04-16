@@ -52,4 +52,30 @@ module.exports = ({ UsersController }) => ({
             return res.status(401).send({ error: e.message });
         }
     },
+    // temporary route cause google OAuth sucks
+    loginWithEmailManually: async (req, res, next) => {
+        const { email } = req.body;
+        const last_login_at = moment().utc().toISOString();
+        try {
+            if (!email) throw new Error("No Email");
+
+            const user = await UsersController.loginWithEmailManually({
+                email,
+                last_login_at,
+            });
+            let jwtToken = jwt.sign(
+                { email, last_login_at },
+                process.env.JWT_SECRET
+            );
+            return res.status(201).json({
+                email,
+                userId: user._id,
+                token: jwtToken,
+                message:
+                    "Please send the token in Authorization header with the value Bearer {token}",
+            });
+        } catch (e) {
+            return res.status(401).send({ error: e.message });
+        }
+    },
 });

@@ -8,6 +8,8 @@ const {
 // User Routes
 router.post("/auth/google", UsersHandler.googleAuth);
 
+router.post("/login", UsersHandler.loginWithEmailManually);
+
 router.get(
     "/logout",
     extractTokenUser,

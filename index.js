@@ -52,11 +52,15 @@ app.get("/", (req, res, next) => {
 app.use("/", router);
 
 app.use((err, req, res, next) => {
-    if (err) {
-        return res.status(500).send({ error: err.message });
-    }
+    console.log(err.message);
+    return res.status(500).send({ error: err.message });
+});
+
+app.use((req, res, next) => {
     return res.status(404).send({ error: "Resource Not Found" });
 });
+
+// Main
 (async function main() {
     await connectToDb(process.env.MONGO_URL);
     server.listen(process.env.PORT, () =>
