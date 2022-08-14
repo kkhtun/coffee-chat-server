@@ -1,26 +1,19 @@
 module.exports = ({ UserModel }) => ({
-    syncUser: async ({ name, email, picture, last_login_at }) => {
-        const user = await UserModel.findOne({ email }).exec();
-        if (user) {
-            return await UserModel.findOneAndUpdate(
-                {
-                    email,
-                },
-                {
-                    name,
-                    picture,
-                    last_login_at,
-                },
-                { new: true }
-            );
+    getOneUserByFilter: async (filter, projection = {}, throwError = true) => {
+        const user = await UserModel.findOne(filter, projection).lean().exec();
+        if (throwError && !user) throw new Error(USER_ERRORS.NOT_FOUND);
+        return user;
+    },
+    syncUser: async (filter, data) => {
+        const user = await UserModel.findOne(filter).exec();
+        if (!user) {
+            const user = new UserModel(data);
+            return await user.save();
         } else {
-            const newUser = new UserModel({
-                email,
-                name,
-                picture,
-                last_login_at,
-            });
-            return await newUser.save();
+            user.firebase_id = data.firebase_id;
+            user.name = data.name;
+            user.email = data.email;
+            return await user.save();
         }
     },
     getOneUserByFilter: async (filter) => {

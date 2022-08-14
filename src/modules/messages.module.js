@@ -18,5 +18,6 @@ const makeMessagesHandler = makeMessagesHandlerWithoutSocket({
 });
 
 module.exports = {
+    MessagesService,
     makeMessagesHandler,
 };

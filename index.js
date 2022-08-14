@@ -11,7 +11,7 @@ const { makeChannelsHandler } = require("./src/modules/channels.module");
 const { router } = require("./src/routes");
 const {
     isSocketAuthenticated,
-} = require("./src/middlewares/socket-auth.middleware");
+} = require("./src/middlewares/is-authenticated.middleware");
 
 // Socket IO Handlers
 const io = require("socket.io")(server, {
@@ -22,21 +22,23 @@ const io = require("socket.io")(server, {
 });
 
 io.use(isSocketAuthenticated).on("connection", async (socket) => {
-    socket.emit("connection", null);
-    const channelsHandler = makeChannelsHandler({ io, socket });
-    socket.on("get:channels", channelsHandler.getChannels);
+    socket.emit("connection", "Socket connected");
 
     // Channels as room
+    const channelsHandler = makeChannelsHandler({ io, socket });
+    socket.on("get:channels", channelsHandler.getChannels);
     socket.on("join:room", ({ channelId }) => {
         socket.leaveAll();
         socket.join(channelId);
     });
+    socket.on("create:channel", channelsHandler.createChannel);
+    socket.on("delete:channel", channelsHandler.deleteChannel);
 
+    // message related
     const messageHandler = makeMessagesHandler({ io, socket });
     socket.on("get:messages", messageHandler.getMessages);
     socket.on("send:message", messageHandler.createMessage);
     socket.on("delete:message", messageHandler.deleteMessage);
-
     socket.on("get:more-messages", messageHandler.getMoreMessages);
 });
 

@@ -8,4 +8,11 @@ module.exports = ({ ChannelModel }) => ({
         if (!data) throw new Error("Channel Not Found");
         return data;
     },
+    createChannel: async ({ name }) => {
+        const channel = new ChannelModel({ name });
+        return await channel.save();
+    },
+    deleteChannel: async (_id) => {
+        return await ChannelModel.deleteOne({ _id });
+    },
 });

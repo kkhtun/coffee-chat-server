@@ -36,4 +36,7 @@ module.exports = ({ MessageModel }) => ({
                 : null,
         };
     },
+    deleteMessagesByChannel: async (filter) => {
+        return await MessageModel.deleteMany(filter).exec();
+    },
 });

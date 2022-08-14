@@ -1,10 +1,12 @@
 const UserModel = require("../models/users.model");
+const UserService = require("../services/users.service")({ UserModel });
+const FirebaseService = require("../services/firebase.service")({});
 const jwt = require("jsonwebtoken");
 
 async function extractTokenUser(req, res, next) {
     const bearerToken = req.headers.authorization;
     if (!bearerToken) {
-        return res.status(401).send({ error: "Unauthorized" });
+        return next();
     }
     const arrToken = bearerToken.split(" ");
     if (arrToken[0] !== "Bearer" || !arrToken[1]) {
@@ -31,4 +33,27 @@ async function isAuthenticated(req, res, next) {
     }
 }
 
-module.exports = { isAuthenticated, extractTokenUser };
+async function isSocketAuthenticated(socket, next) {
+    const token = socket.handshake.auth.token;
+    if (!token) next(new Error("Invalid Token"));
+
+    try {
+        const {
+            uid: firebase_id,
+            name,
+            email,
+        } = await FirebaseService.verifyToken(token);
+
+        socket.data.user = await UserService.syncUser(
+            { firebase_id },
+            { firebase_id, name, email }
+        );
+        socket.data.token = token;
+        return next();
+    } catch (e) {
+        console.log(e);
+        return next(new Error("Invalid Token"));
+    }
+}
+
+module.exports = { isAuthenticated, extractTokenUser, isSocketAuthenticated };

@@ -16,7 +16,10 @@ module.exports =
         },
         createMessage: async (data) => {
             try {
-                const newMessage = await MessagesController.createMessage(data);
+                const newMessage = await MessagesController.createMessage({
+                    ...data,
+                    user_id: socket.data.user._id,
+                });
                 io.to(newMessage.channel_id.toString()).emit("new:message", {
                     data: newMessage,
                 });
